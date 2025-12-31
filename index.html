@@ -3,14 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contador MXN</title>
+<title>HTM – Contador de Dinero</title>
+
+<!-- ICONO HTM (EMBEBIDO) -->
+<link rel="icon" type="image/svg+xml" href='data:image/svg+xml,
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<rect width="100" height="100" rx="22" fill="%23007aff"/>
+<text x="50" y="62" font-size="42" fill="white" text-anchor="middle" font-family="Arial">HTM</text>
+</svg>'>
 
 <style>
 body{
   margin:0;
+  background:#0f0f10;
+  color:white;
   font-family:-apple-system,BlinkMacSystemFont;
-  background:#0d0d0d;
-  color:#fff;
   display:flex;
   justify-content:center;
 }
@@ -18,76 +25,57 @@ body{
 .app{
   width:100%;
   max-width:420px;
-  padding:16px 14px 90px;
+  padding:16px;
 }
 
 h1{
-  font-size:18px;
-  font-weight:600;
-  margin-bottom:10px;
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  font-size:14px;
-}
-
-th,td{
-  padding:6px;
-  text-align:right;
-}
-
-th{
-  font-weight:500;
-  color:#aaa;
-}
-
-td:first-child, th:first-child{
   text-align:center;
+  font-size:20px;
+  margin-bottom:14px;
+}
+
+.row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+  margin-bottom:6px;
 }
 
 input{
-  width:48px;
   background:#1c1c1e;
+  color:white;
   border:none;
-  color:#fff;
+  border-radius:8px;
+  padding:10px;
+  font-size:15px;
   text-align:center;
-  border-radius:6px;
-  padding:4px;
-  font-size:14px;
 }
 
-.total-col{
-  color:#0a84ff;
-  font-weight:500;
+input[disabled]{
+  color:#aaa;
 }
 
 .footer{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#111;
-  border-top:1px solid #222;
-  padding:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  margin-top:16px;
+  padding-top:12px;
+  border-top:1px solid #333;
 }
 
-.sum{
-  font-size:18px;
+.total{
+  font-size:22px;
   font-weight:600;
+  text-align:center;
+  margin-bottom:12px;
 }
 
 button{
-  background:#1c1c1e;
-  color:#ff453a;
-  border:none;
-  padding:8px 14px;
+  width:100%;
+  padding:12px;
   border-radius:10px;
-  font-size:14px;
+  border:none;
+  background:#2c2c2e;
+  color:white;
+  font-size:16px;
 }
 </style>
 </head>
@@ -95,64 +83,56 @@ button{
 <body>
 
 <div class="app">
-  <h1>Contador de efectivo MXN</h1>
+  <h1>Contador de Dinero</h1>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Cant.</th>
-        <th>Valor</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-    <tbody id="rows"></tbody>
-  </table>
-</div>
+  <div id="rows"></div>
 
-<div class="footer">
-  <div class="sum" id="sum">$0</div>
-  <button onclick="clearAll()">Limpiar</button>
+  <div class="footer">
+    <div class="total" id="total">$0</div>
+    <button onclick="clearAll()">Limpiar</button>
+  </div>
 </div>
 
 <script>
-const values=[1000,500,200,100,50,20,10,5,2,1,0.5];
-const rows=document.getElementById("rows");
-const sumEl=document.getElementById("sum");
+const denominations = [1000,500,200,100,50,20,10,5,2,1];
+const rows = document.getElementById("rows");
+const totalEl = document.getElementById("total");
 
 function money(n){
-  return n.toLocaleString("es-MX",{minimumFractionDigits:2});
+  return "$" + n.toLocaleString("es-MX");
 }
 
-values.forEach(v=>{
-  const tr=document.createElement("tr");
-  tr.innerHTML=`
-    <td><input type="number" min="0" value="0"></td>
-    <td>$${money(v)}</td>
-    <td class="total-col">$0</td>
-  `;
-  rows.appendChild(tr);
-});
+function render(){
+  rows.innerHTML="";
+  denominations.forEach((d,i)=>{
+    const r=document.createElement("div");
+    r.className="row";
+    r.innerHTML=`
+      <input type="number" min="0" placeholder="0" oninput="calc()">
+      <input value="${money(d)}" disabled>
+      <input disabled>
+    `;
+    rows.appendChild(r);
+  });
+}
 
 function calc(){
-  let sum=0;
-  [...rows.children].forEach((r,i)=>{
-    const qty=+r.children[0].firstChild.value||0;
-    const t=qty*values[i];
-    r.children[2].textContent="$"+money(t);
-    sum+=t;
+  let total=0;
+  document.querySelectorAll(".row").forEach((r,i)=>{
+    const qty=+r.children[0].value||0;
+    const sub=qty*denominations[i];
+    r.children[2].value=sub?money(sub):"";
+    total+=sub;
   });
-  sumEl.textContent="$"+money(sum);
+  totalEl.textContent=money(total);
 }
-
-rows.addEventListener("input",calc);
 
 function clearAll(){
-  [...rows.children].forEach(r=>{
-    r.children[0].firstChild.value=0;
-    r.children[2].textContent="$0";
-  });
-  sumEl.textContent="$0";
+  document.querySelectorAll("input").forEach(i=>i.value="");
+  totalEl.textContent="$0";
 }
+
+render();
 </script>
 
 </body>
