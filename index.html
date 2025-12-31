@@ -3,175 +3,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contador de Efectivo</title>
 
-<title>HTM Contador</title>
-
-<!-- ICONO -->
-<link rel="icon" type="image/svg+xml"
-href="data:image/svg+xml,
+<!-- Icono -->
+<link rel="icon" href="data:image/svg+xml,
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>
-<rect width='100' height='100' rx='22' fill='%23000'/>
-<text x='50' y='62' font-size='48' text-anchor='middle' fill='%23fff'>💰</text>
+<rect width='100' height='100' rx='20' fill='black'/>
+<text x='50' y='62' font-size='46' fill='white' text-anchor='middle' font-family='Arial'>MX</text>
 </svg>">
 
 <style>
-*{box-sizing:border-box}
-
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont;
   background:#000;
   color:#fff;
-  display:flex;
-  justify-content:center;
 }
 
 .container{
-  width:100%;
   max-width:420px;
+  margin:auto;
   padding:16px;
 }
 
-h1{
-  text-align:center;
-  font-size:20px;
-  margin-bottom:12px;
-  font-weight:600;
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:15px;
 }
 
-.table{
-  display:grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap:6px;
-  font-size:14px;
+th,td{
+  padding:8px;
+  text-align:right;
 }
 
-.header{
-  opacity:.7;
-  font-size:12px;
-  padding-bottom:6px;
-}
-
-.cell{
-  background:#111;
-  padding:6px;
-  border-radius:8px;
+th:first-child, td:first-child{
   text-align:center;
 }
 
 input{
-  width:100%;
+  width:50px;
+  padding:6px;
   background:#111;
-  border:none;
-  color:white;
+  color:#fff;
+  border:1px solid #333;
+  border-radius:6px;
   text-align:center;
-  font-size:14px;
+  font-size:15px;
 }
 
-input:focus{outline:none}
-
-.total-cell{
-  text-align:right;
-  padding-right:8px;
+tfoot{
+  border-top:1px solid #333;
 }
 
-.footer{
-  margin-top:16px;
-  background:#111;
-  border-radius:14px;
-  padding:12px;
-}
-
-.footer-row{
+.total-box{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #333;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:8px;
 }
 
-.grand-total{
-  font-size:20px;
+.total{
+  font-size:22px;
   font-weight:600;
 }
 
 button{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
   background:#222;
-  color:white;
+  color:#fff;
   border:none;
+  padding:10px 14px;
+  border-radius:10px;
   font-size:14px;
 }
-button:active{background:#333}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h1>Contador de efectivo</h1>
+<table>
+<thead>
+<tr>
+  <th>Cant.</th>
+  <th>Valor</th>
+  <th>Total</th>
+</tr>
+</thead>
 
-<div class="table header">
-  <div>Cantidad</div>
-  <div>Valor</div>
-  <div>Total</div>
-</div>
+<tbody id="rows"></tbody>
+</table>
 
-<div id="rows" class="table"></div>
-
-<div class="footer">
-  <div class="footer-row">
-    <span>Total</span>
-    <span class="grand-total" id="grand">$0</span>
-  </div>
-  <button onclick="clearAll()">Limpiar</button>
+<div class="total-box">
+  <button onclick="limpiar()">Limpiar</button>
+  <div class="total" id="suma">$0</div>
 </div>
 
 </div>
 
 <script>
-const denominations = [1000,500,200,100,50,20,10,5,2,1,0.5];
+const denominaciones = [1000,500,200,100,50,20,10,5,2,1,0.5];
 const rows = document.getElementById("rows");
-const grand = document.getElementById("grand");
+const sumaEl = document.getElementById("suma");
 
-function format(n){
+let cantidades = new Array(denominaciones.length).fill("");
+
+function formato(n){
   return n.toLocaleString("es-MX",{minimumFractionDigits:2});
 }
 
-function render(){
-  rows.innerHTML="";
-  let sum=0;
+function calcular(){
+  let total = 0;
 
-  denominations.forEach((d,i)=>{
-    const qty = localStorage.getItem("q"+i)||"";
-    const total = qty?qty*d:0;
-    sum+=total;
-
-    rows.innerHTML+=`
-      <div class="cell">
-        <input inputmode="numeric" value="${qty}"
-        oninput="update(${i},this.value)">
-      </div>
-      <div class="cell">$${format(d)}</div>
-      <div class="cell total-cell">$${format(total)}</div>
-    `;
+  denominaciones.forEach((val,i)=>{
+    const qty = Number(cantidades[i]) || 0;
+    const subtotal = qty * val;
+    document.getElementById("t"+i).textContent = "$"+formato(subtotal);
+    total += subtotal;
   });
 
-  grand.textContent="$"+format(sum);
+  sumaEl.textContent = "$"+formato(total);
 }
 
-function update(i,v){
-  localStorage.setItem("q"+i,v);
-  render();
-}
+denominaciones.forEach((val,i)=>{
+  const tr = document.createElement("tr");
 
-function clearAll(){
-  denominations.forEach((_,i)=>localStorage.removeItem("q"+i));
-  render();
-}
+  tr.innerHTML = `
+    <td>
+      <input inputmode="numeric"
+             oninput="cantidades[${i}]=this.value;calcular()">
+    </td>
+    <td>$${val}</td>
+    <td id="t${i}">$0.00</td>
+  `;
 
-render();
+  rows.appendChild(tr);
+});
+
+function limpiar(){
+  cantidades.fill("");
+  document.querySelectorAll("input").forEach(i=>i.value="");
+  calcular();
+}
 </script>
 
 </body>
