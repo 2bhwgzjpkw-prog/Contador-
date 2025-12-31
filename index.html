@@ -6,34 +6,25 @@
 <title>Contador de Dinero</title>
 
 <style>
-:root{
-  --bg:#f2f2f7;
-  --card:#ffffff;
-  --text:#000;
-  --line:#ddd;
-}
-
-.dark{
-  --bg:#000;
-  --card:#111;
-  --text:#fff;
-  --line:#333;
-}
-
 body{
   margin:0;
+  background:#0b0b0d;
   font-family:-apple-system,BlinkMacSystemFont;
-  background:var(--bg);
-  color:var(--text);
+  color:#fff;
+  display:flex;
+  justify-content:center;
 }
 
-header{
-  padding:16px;
+.container{
+  width:100%;
+  max-width:420px;
+  padding:20px 16px 30px;
+}
+
+h1{
   font-size:20px;
+  margin-bottom:16px;
   font-weight:600;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
 }
 
 table{
@@ -42,107 +33,113 @@ table{
 }
 
 th,td{
-  padding:12px;
-  border-bottom:1px solid var(--line);
+  padding:10px 6px;
   text-align:center;
+  font-size:15px;
+}
+
+th{
+  color:#9a9aa0;
+  font-weight:500;
+}
+
+tr:not(:last-child){
+  border-bottom:1px solid #1c1c1f;
 }
 
 input{
   width:60px;
-  padding:6px;
-  font-size:16px;
+  background:#1c1c1f;
+  border:none;
+  border-radius:8px;
+  padding:8px;
+  color:white;
   text-align:center;
+  font-size:15px;
 }
 
 .total{
   font-weight:600;
 }
 
-footer{
-  padding:16px;
+.sum{
+  margin-top:16px;
+  font-size:18px;
+  text-align:right;
 }
 
 button{
+  margin-top:14px;
   width:100%;
-  padding:14px;
-  font-size:16px;
-  border-radius:12px;
+  padding:12px;
   border:none;
-  margin-bottom:10px;
+  border-radius:12px;
+  background:#1c1c1f;
+  color:white;
+  font-size:16px;
 }
-
-.clear{background:#ff3b30;color:white}
-.mode{background:#007aff;color:white}
 </style>
 </head>
 
 <body>
 
-<header>
-  <span>Contador MXN</span>
-  <span id="sum">$0</span>
-</header>
+<div class="container">
+<h1>Contador de dinero</h1>
 
 <table>
 <thead>
 <tr>
-  <th>Cantidad</th>
-  <th>Valor</th>
-  <th>Total</th>
+<th>Cantidad</th>
+<th>Valor</th>
+<th>Total</th>
 </tr>
 </thead>
 <tbody id="rows"></tbody>
 </table>
 
-<footer>
-  <button class="clear" onclick="clearAll()">Limpiar</button>
-  <button class="mode" onclick="toggleMode()">Claro / Oscuro</button>
-</footer>
+<div class="sum" id="sum">Total: $0</div>
+<button onclick="clearAll()">Limpiar</button>
+</div>
 
 <script>
-const denoms=[1000,500,200,100,50,20,10,5,2,1,0.5];
-const rows=document.getElementById("rows");
-const sumEl=document.getElementById("sum");
+const denominations = [1000,500,200,100,50,20,10,5,2,1,0.5];
+const rows = document.getElementById("rows");
+const sumEl = document.getElementById("sum");
+
+function format(n){
+  return n.toLocaleString("es-MX",{minimumFractionDigits:0,maximumFractionDigits:2});
+}
 
 function render(){
   rows.innerHTML="";
-  denoms.forEach((d,i)=>{
-    rows.innerHTML+=`
-    <tr>
+  denominations.forEach((d,i)=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`
       <td><input type="number" min="0" value="0" oninput="calc()"></td>
-      <td>$${d}</td>
+      <td>$${format(d)}</td>
       <td class="total">$0</td>
-    </tr>`;
+    `;
+    rows.appendChild(tr);
   });
 }
 
 function calc(){
   let sum=0;
   [...rows.children].forEach((r,i)=>{
-    const qty=r.children[0].children[0].value||0;
-    const total=qty*denoms[i];
-    r.children[2].textContent="$"+total.toFixed(2);
-    sum+=total;
+    const qty = +r.children[0].children[0].value || 0;
+    const total = qty * denominations[i];
+    r.children[2].textContent = "$" + format(total);
+    sum += total;
   });
-  sumEl.textContent="$"+sum.toFixed(2);
+  sumEl.textContent = "Total: $" + format(sum);
 }
 
 function clearAll(){
-  document.querySelectorAll("input").forEach(i=>i.value=0);
+  [...rows.querySelectorAll("input")].forEach(i=>i.value=0);
   calc();
 }
 
-function toggleMode(){
-  document.body.classList.toggle("dark");
-  localStorage.setItem("mode",document.body.classList.contains("dark"));
-}
-
-if(localStorage.getItem("mode")==="true"){
-  document.body.classList.add("dark");
-}
-
 render();
-calc();
 </script>
 
 </body>
