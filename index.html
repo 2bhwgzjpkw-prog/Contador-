@@ -3,143 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contador de Dinero</title>
+<title>Contador MXN</title>
 
 <style>
 body{
   margin:0;
-  background:#0b0b0d;
   font-family:-apple-system,BlinkMacSystemFont;
+  background:#0d0d0d;
   color:#fff;
   display:flex;
   justify-content:center;
 }
 
-.container{
+.app{
   width:100%;
   max-width:420px;
-  padding:20px 16px 30px;
+  padding:16px 14px 90px;
 }
 
 h1{
-  font-size:20px;
-  margin-bottom:16px;
+  font-size:18px;
   font-weight:600;
+  margin-bottom:10px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
+  font-size:14px;
 }
 
 th,td{
-  padding:10px 6px;
-  text-align:center;
-  font-size:15px;
-}
-
-th{
-  color:#9a9aa0;
-  font-weight:500;
-}
-
-tr:not(:last-child){
-  border-bottom:1px solid #1c1c1f;
-}
-
-input{
-  width:60px;
-  background:#1c1c1f;
-  border:none;
-  border-radius:8px;
-  padding:8px;
-  color:white;
-  text-align:center;
-  font-size:15px;
-}
-
-.total{
-  font-weight:600;
-}
-
-.sum{
-  margin-top:16px;
-  font-size:18px;
+  padding:6px;
   text-align:right;
 }
 
-button{
-  margin-top:14px;
-  width:100%;
-  padding:12px;
+th{
+  font-weight:500;
+  color:#aaa;
+}
+
+td:first-child, th:first-child{
+  text-align:center;
+}
+
+input{
+  width:48px;
+  background:#1c1c1e;
   border:none;
-  border-radius:12px;
-  background:#1c1c1f;
-  color:white;
-  font-size:16px;
+  color:#fff;
+  text-align:center;
+  border-radius:6px;
+  padding:4px;
+  font-size:14px;
+}
+
+.total-col{
+  color:#0a84ff;
+  font-weight:500;
+}
+
+.footer{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#111;
+  border-top:1px solid #222;
+  padding:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.sum{
+  font-size:18px;
+  font-weight:600;
+}
+
+button{
+  background:#1c1c1e;
+  color:#ff453a;
+  border:none;
+  padding:8px 14px;
+  border-radius:10px;
+  font-size:14px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-<h1>Contador de dinero</h1>
+<div class="app">
+  <h1>Contador de efectivo MXN</h1>
 
-<table>
-<thead>
-<tr>
-<th>Cantidad</th>
-<th>Valor</th>
-<th>Total</th>
-</tr>
-</thead>
-<tbody id="rows"></tbody>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Cant.</th>
+        <th>Valor</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
 
-<div class="sum" id="sum">Total: $0</div>
-<button onclick="clearAll()">Limpiar</button>
+<div class="footer">
+  <div class="sum" id="sum">$0</div>
+  <button onclick="clearAll()">Limpiar</button>
 </div>
 
 <script>
-const denominations = [1000,500,200,100,50,20,10,5,2,1,0.5];
-const rows = document.getElementById("rows");
-const sumEl = document.getElementById("sum");
+const values=[1000,500,200,100,50,20,10,5,2,1,0.5];
+const rows=document.getElementById("rows");
+const sumEl=document.getElementById("sum");
 
-function format(n){
-  return n.toLocaleString("es-MX",{minimumFractionDigits:0,maximumFractionDigits:2});
+function money(n){
+  return n.toLocaleString("es-MX",{minimumFractionDigits:2});
 }
 
-function render(){
-  rows.innerHTML="";
-  denominations.forEach((d,i)=>{
-    const tr=document.createElement("tr");
-    tr.innerHTML=`
-      <td><input type="number" min="0" value="0" oninput="calc()"></td>
-      <td>$${format(d)}</td>
-      <td class="total">$0</td>
-    `;
-    rows.appendChild(tr);
-  });
-}
+values.forEach(v=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`
+    <td><input type="number" min="0" value="0"></td>
+    <td>$${money(v)}</td>
+    <td class="total-col">$0</td>
+  `;
+  rows.appendChild(tr);
+});
 
 function calc(){
   let sum=0;
   [...rows.children].forEach((r,i)=>{
-    const qty = +r.children[0].children[0].value || 0;
-    const total = qty * denominations[i];
-    r.children[2].textContent = "$" + format(total);
-    sum += total;
+    const qty=+r.children[0].firstChild.value||0;
+    const t=qty*values[i];
+    r.children[2].textContent="$"+money(t);
+    sum+=t;
   });
-  sumEl.textContent = "Total: $" + format(sum);
+  sumEl.textContent="$"+money(sum);
 }
+
+rows.addEventListener("input",calc);
 
 function clearAll(){
-  [...rows.querySelectorAll("input")].forEach(i=>i.value=0);
-  calc();
+  [...rows.children].forEach(r=>{
+    r.children[0].firstChild.value=0;
+    r.children[2].textContent="$0";
+  });
+  sumEl.textContent="$0";
 }
-
-render();
 </script>
 
 </body>
